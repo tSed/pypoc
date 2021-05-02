@@ -8,7 +8,7 @@ from random import choices
 
 from PyQt6.QtWidgets import QWidget, QApplication, QVBoxLayout, QMainWindow
 from PyQt6.QtGui import QFont, QPainter, QPainterPath, QPainterPathStroker, QColor
-from PyQt6.QtCore import Qt, QRect, QTimer, QPoint, QPointF, QSize
+from PyQt6.QtCore import Qt, QRect, QRectF, QTimer, QPoint, QPointF, QSize
 
 
 OutlineFormat = namedtuple('OutlineFormat', ('color', 'width'))
@@ -17,13 +17,22 @@ OSDFormat = namedtuple('OSDFormat', ('font', 'color', 'outline', 'alignment'))
 
 
 class OSDWidget(QWidget):
-    def __init__(self, text, osd_format, position, size, parent=None):
+    def __init__(self, text, osd_format, position, size, fixed_postion=False, parent=None):
         super(OSDWidget, self).__init__(parent=parent)
 
         self._text = text
         self._format = osd_format
         self._pos = position
         self._size = size
+        if fixed_postion:
+            self._fixed_pos = None
+        else:
+            self._fixed_pos = fixed_postion
+
+        font_size = self._format.font.pixelSize()
+        if font_size < 0:
+            font_size = (self._format.font.pointSize() * 4) / 3
+        self._baseline_pos = QPointF(0, font_size)
 
     def paintEvent(self, e=None):
         qp = QPainter()
@@ -31,16 +40,65 @@ class OSDWidget(QWidget):
         self.draw(qp)
         qp.end()
 
+    def compute_translation(self, osd):
+        if self._format.alignment == Qt.Alignment.AlignAbsolute:
+            translation = self._baseline_pos
+        else:
+            # No need for handling Qt.Alignment.AlignCenter since it is the combination
+            # of Qt.Alignment.AlignVCenter | Qt.Alignment.AlignHCenter
+
+            # Horizontal alignment
+            if self._format.alignment & Qt.Alignment.AlignHCenter:
+                dx = (self._size.width() - osd.width()) / 2
+            elif self._format.alignment & Qt.Alignment.AlignLeft:
+                dx = self._format.outline.width
+            elif self._format.alignment & Qt.Alignment.AlignRight:
+                dx = self._size.width() - osd.width() - self._format.outline.width
+            else:
+                dx = self._format.outline.width
+
+            # Vertical alignement
+            if self._baseline_pos.y() > osd.height():
+                baseline_pos = osd.height()
+            else:
+                baseline_pos = self._baseline_pos.y()
+
+            if self._format.alignment & Qt.Alignment.AlignVCenter:
+                dy = (self._size.height() - osd.height()) / 2 + baseline_pos
+            elif self._format.alignment & Qt.Alignment.AlignBaseline:
+                dy = self._size.height() / 2
+            elif self._format.alignment & Qt.Alignment.AlignTop:
+                dy = baseline_pos + self._format.outline.width
+            elif self._format.alignment & Qt.Alignment.AlignBottom:
+                dy = (self._size.height()
+                      - (osd.height() - baseline_pos)
+                      - self._format.outline.width)
+            else:
+                dy = self._baseline_pos.y()
+
+            translation = QPointF(dx, dy)
+
+        return translation
+
     def draw(self, qp):
         if callable(self._text):
             text = self._text()
         else:
             text = self._text
 
-        osd = QPainterPath()
         self.setGeometry(QRect(self._pos, self._size))
+
+        osd = QPainterPath()
         osd.addText(QPointF(0, 0), self._format.font, text)
-        osd.translate(0, self._format.font.pixelSize())
+
+        if self._fixed_pos:
+            translation = self._fixed_pos
+        else:
+            translation = self.compute_translation(osd.boundingRect())
+            if self._fixed_pos is None:
+                self._fixed_pos = translation
+
+        osd.translate(translation)
 
         qp.setRenderHint(QPainter.RenderHints.Antialiasing)
 
@@ -54,6 +112,21 @@ class OSDWidget(QWidget):
         qp.setPen(self._format.color)
         qp.setBrush(self._format.color)
         qp.drawPath(osd)
+
+        qp.setBrush(Qt.BrushStyle.NoBrush)
+        qp.setPen(QColor('#ff0000'))
+        qp.drawRect(QRect(0, 0, self.width(), self.height()))
+
+        qp.setPen(QColor('#00ff00'))
+        qp.drawLine(QPointF(0, translation.y()),
+                    QPointF(self.width(), translation.y()))
+
+        osd_bounds = osd.boundingRect()
+        qp.setPen(QColor('#00ffff'))
+        qp.drawRect(QRectF(translation.x(),
+                           translation.y() - osd_bounds.height(),
+                           osd_bounds.width(),
+                           osd_bounds.height()))
 
 
 class TimerWidget(QWidget):
@@ -83,7 +156,7 @@ class Window(QWidget):
         self.init_UI(parent)
 
     def init_UI(self, parent=None):
-        self.delays = choices(range(5, 15), k=1)
+        self.delays = choices(range(1, 5), k=1)
         print(self.delays)
         self.step = 0
 
@@ -95,13 +168,25 @@ class Window(QWidget):
 
         font =QFont()
         font.setPixelSize(30)
+        #font.setPointSize(24)
         self.widgets['osd'] = OSDWidget(self.format_time,
                                         OSDFormat(font,
                                                   Qt.GlobalColor.yellow,
                                                   OutlineFormat(QColor("#202020"), 5),
-                                                  None),
+                                                  0
+                                                  #| Qt.Alignment.AlignAbsolute
+                                                  #| Qt.Alignment.AlignCenter
+                                                  #| Qt.Alignment.AlignHCenter
+                                                  #| Qt.Alignment.AlignLeft
+                                                  | Qt.Alignment.AlignRight
+                                                  #| Qt.Alignment.AlignVCenter
+                                                  #| Qt.Alignment.AlignBaseline
+                                                  #| Qt.Alignment.AlignTop
+                                                  | Qt.Alignment.AlignBottom
+                                                 ),
                                         QPoint(self.width() - 220, 20),
-                                        QSize(200, 40),
+                                        QSize(200, 80),
+                                        True,
                                         self)
 
         self.timer = QTimer(self)
