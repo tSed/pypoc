@@ -46,6 +46,13 @@ class ViewerWidget(QWidget):
         pos = QPoint((self.width() - image.width()) // 2, (self.height() - image.height()) // 2)
         qp.drawImage(QRect(pos, image.size()), image)
 
+    def setWindowTitle(self, title):
+        widget = self.parentWidget()
+        if not widget:
+            widget = self
+
+        widget.setWindowTitle(title)
+
 
 class OSDWidget(QWidget):
     def __init__(self, text, osd_format, position, size, fixed_postion=False, parent=None):
@@ -159,6 +166,13 @@ class OSDWidget(QWidget):
         #                   osd_bounds.width(),
         #                   osd_bounds.height()))
 
+    def setWindowTitle(self, title):
+        widget = self.parentWidget()
+        if not widget:
+            widget = self
+
+        widget.setWindowTitle(title)
+
 
 class TimerWidget(QWidget):
     def __init__(self, interval, format_func, parent=None):
@@ -179,6 +193,13 @@ class TimerWidget(QWidget):
 
     def showTime(self):
         self.repaint()
+
+    def setWindowTitle(self, title):
+        widget = self.parentWidget()
+        if not widget:
+            widget = self
+
+        widget.setWindowTitle(title)
 
 
 def choices_unique(population, *args, k=1, **kwargs):
@@ -295,6 +316,11 @@ class Window(QWidget):
         #else:
         #    self.widgets['timer'].stop()
 
+        title = f"{self.step+1:{len(str(self.COUNT))}d}/{len(self.delays)}"
+        title += f" - {os.path.basename(self.images[self.step])}"
+        print(title)
+        self.setWindowTitle(title)
+
         self.step += 1
 
     def paintEvent(self, e=None):
@@ -308,6 +334,13 @@ class Window(QWidget):
         qp.setBrush(Qt.GlobalColor.blue)
         qp.drawRect(self.geometry())
 
+    def setWindowTitle(self, title):
+        widget = self.parentWidget()
+        if not widget:
+            widget = self
+
+        widget.setWindowTitle(title)
+
 
 def main():
     app = QApplication([])
@@ -319,7 +352,6 @@ def main():
     w.setGeometry(QRect(QPoint(0, 0), w.screen().size()))
     w.setCentralWidget(Window(sys.argv[1], parent=w))
     w.showFullScreen()
-    w.setWindowTitle(os.path.basename(__file__))
     app.exec()
 
 
