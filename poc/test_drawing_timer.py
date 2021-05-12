@@ -11,6 +11,7 @@ from PyQt6.QtGui import QFont, QPainter, QPainterPath, QPainterPathStroker, QCol
 from PyQt6.QtGui import QImageReader, QImage
 from PyQt6.QtCore import Qt, QRect, QRectF, QTimer, QPoint, QPointF, QSize
 
+import signal
 
 OutlineFormat = namedtuple('OutlineFormat', ('color', 'width'))
 
@@ -345,6 +346,12 @@ class Window(QWidget):
 
 def main():
     app = QApplication([])
+
+    signal.signal(signal.SIGTERM, lambda signum, frame: app.quit())
+    signal.signal(signal.SIGINT, lambda signum, frame: app.quit())
+    # Cannot register signal handler on SIGKILL
+    #signal.signal(signal.SIGKILL, lambda signum, frame: app.quit())
+
     w = QMainWindow()
     w.setWindowFlags(Qt.WindowFlags.WindowStaysOnTopHint |
                      Qt.WindowFlags.CustomizeWindowHint |
