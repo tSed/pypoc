@@ -236,7 +236,7 @@ class Window(QWidget):
         for p in self.images:
             print(p)
 
-        self.delays = [self.DELAY + i for i in range(len(self.images))]
+        self.delays = [self.DELAY for _ in self.images]
         print(self.delays)
         self.step = 0
 
