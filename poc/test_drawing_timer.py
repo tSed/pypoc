@@ -233,11 +233,7 @@ class Window(QWidget):
         self.image = None
         self.image_path = None
 
-        for p in self.images:
-            print(p)
-
         self.delays = [self.DELAY for _ in self.images]
-        print(self.delays)
         self.step = 0
 
     def get_image(self, size):
@@ -253,7 +249,6 @@ class Window(QWidget):
     def init_ui(self, parent=None):
         geometry = QRect(QPoint(0,0), self.screen().size())
 
-        print(f'frameGeometry:{geometry}')
         self.setGeometry(geometry)
 
         self.widgets = {}
@@ -364,7 +359,6 @@ class ScreenSaver:
         return config
 
     def set_config(self, config):
-        #print(config)
         self.display.set_screen_saver(**config)
         assert self.display.get_screen_saver()._data['timeout'] == config['timeout']
 
