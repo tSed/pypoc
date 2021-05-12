@@ -4,7 +4,7 @@ import os
 from collections import namedtuple
 
 from datetime import datetime, timezone
-from random import choices
+from random import sample
 
 from PyQt6.QtWidgets import QWidget, QApplication, QStackedLayout, QMainWindow
 from PyQt6.QtGui import QFont, QPainter, QPainterPath, QPainterPathStroker, QColor
@@ -181,6 +181,14 @@ class TimerWidget(QWidget):
         self.repaint()
 
 
+def choices_unique(population, *args, k=1, **kwargs):
+    pop = []
+    step = len(population)
+    for n in range(0, k, step):
+        pop.extend(sample(population, k - n if k - n < step else step))
+    return pop
+
+
 class Window(QWidget):
 
     IMAGE_FORMATS = ('bmp', 'gif', 'jpg', 'jpeg', 'png', 'pbm', 'pgm', 'ppm', 'xbm', 'xpm')
@@ -198,7 +206,7 @@ class Window(QWidget):
         for r, _, fs in os.walk(image_dir):
             images.extend([os.path.join(r, f) for f in fs
                            if f.rsplit('.', 1)[-1].lower() in self.IMAGE_FORMATS])
-        self.images = choices(images, k=self.COUNT)
+        self.images = choices_unique(images, k=self.COUNT)
         self.image = None
         self.image_path = None
 
