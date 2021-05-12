@@ -307,7 +307,8 @@ class Window(QWidget):
 
     def start(self):
         if self.step >= len(self.delays):
-            sys.exit()
+            QApplication.instance().quit()
+            return
 
         self.timer.start(self.delays[self.step] * 1000)
         self.widgets['timer'].start()
@@ -352,8 +353,9 @@ def main():
     w.setGeometry(QRect(QPoint(0, 0), w.screen().size()))
     w.setCentralWidget(Window(sys.argv[1], parent=w))
     w.showFullScreen()
-    app.exec()
+
+    return app.exec()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
