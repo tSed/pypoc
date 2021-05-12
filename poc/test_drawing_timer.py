@@ -11,6 +11,7 @@ from PyQt6.QtGui import QFont, QPainter, QPainterPath, QPainterPathStroker, QCol
 from PyQt6.QtGui import QImageReader, QImage
 from PyQt6.QtCore import Qt, QRect, QRectF, QTimer, QPoint, QPointF, QSize
 
+from Xlib.display import Display
 import signal
 
 OutlineFormat = namedtuple('OutlineFormat', ('color', 'width'))
@@ -344,13 +345,48 @@ class Window(QWidget):
         widget.setWindowTitle(title)
 
 
+class ScreenSaver:
+    def __init__(self, enable=False, timeout=600):
+        self.display = Display()
+        self.defaults = self.fix_xlib_config(self.display.get_screen_saver()._data)
+        self.config = self.defaults.copy()
+
+        if enable and not timeout:
+            raise ValueError(f'Invalid timeout value: {timeout}')
+
+        self.config['timeout'] = timeout if enable else 0
+
+    @staticmethod
+    def fix_xlib_config(config):
+        config.pop('sequence_number', None)
+        if 'prefer_blanking' in config:
+            config['prefer_blank'] = config.pop('prefer_blanking')
+        return config
+
+    def set_config(self, config):
+        #print(config)
+        self.display.set_screen_saver(**config)
+        assert self.display.get_screen_saver()._data['timeout'] == config['timeout']
+
+    def apply(self):
+        self.set_config(self.config)
+
+    def restore(self):
+        self.set_config(self.defaults)
+
+
 def main():
     app = QApplication([])
+
+    screensaver = ScreenSaver(enable=False)
+    screensaver.apply()
 
     signal.signal(signal.SIGTERM, lambda signum, frame: app.quit())
     signal.signal(signal.SIGINT, lambda signum, frame: app.quit())
     # Cannot register signal handler on SIGKILL
     #signal.signal(signal.SIGKILL, lambda signum, frame: app.quit())
+
+    app.aboutToQuit.connect(screensaver.restore)
 
     w = QMainWindow()
     w.setWindowFlags(Qt.WindowFlags.WindowStaysOnTopHint |
