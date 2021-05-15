@@ -1,3 +1,7 @@
+""" PyQt6 sample program: OSD.
+
+"""
+
 import sys
 import os
 
@@ -17,8 +21,12 @@ OSDFormat = namedtuple('OSDFormat', ('font', 'color', 'outline', 'alignment'))
 
 
 class OSDWidget(QWidget):
+    """ OSD (on-screen-display) widget
+
+    """
+    # pylint: disable=too-many-arguments
     def __init__(self, text, osd_format, position, size, fixed_postion=False, parent=None):
-        super(OSDWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self._text = text
         self._format = osd_format
@@ -34,13 +42,25 @@ class OSDWidget(QWidget):
             font_size = (self._format.font.pointSize() * 4) / 3
         self._baseline_pos = QPointF(0, font_size)
 
-    def paintEvent(self, e=None):
-        qp = QPainter()
-        qp.begin(self)
-        self.draw(qp)
-        qp.end()
+    # pylint: disable=invalid-name
+    # pylint: disable=unused-argument
+    def paintEvent(self, event=None):
+        """ Paint event handler overload
 
+        """
+        qpainter = QPainter()
+        qpainter.begin(self)
+        self.draw(qpainter)
+        qpainter.end()
+
+    # pylint: disable=too-many-branches
     def compute_translation(self, osd):
+        """ Compute the translation vector of the widget
+
+        :param osd: Bounding rectangle of the OSD text
+
+        :return: The translation vector as a QPointF
+        """
         if self._format.alignment == Qt.Alignment.AlignAbsolute:
             translation = self._baseline_pos
         else:
@@ -49,13 +69,13 @@ class OSDWidget(QWidget):
 
             # Horizontal alignment
             if self._format.alignment & Qt.Alignment.AlignHCenter:
-                dx = (self._size.width() - osd.width()) / 2
+                offset_x = (self._size.width() - osd.width()) / 2
             elif self._format.alignment & Qt.Alignment.AlignLeft:
-                dx = self._format.outline.width
+                offset_x = self._format.outline.width
             elif self._format.alignment & Qt.Alignment.AlignRight:
-                dx = self._size.width() - osd.width() - self._format.outline.width
+                offset_x = self._size.width() - osd.width() - self._format.outline.width
             else:
-                dx = self._format.outline.width
+                offset_x = self._format.outline.width
 
             # Vertical alignement
             if self._baseline_pos.y() > osd.height():
@@ -63,24 +83,29 @@ class OSDWidget(QWidget):
             else:
                 baseline_pos = self._baseline_pos.y()
 
+            # OSD text alignment in this widget
             if self._format.alignment & Qt.Alignment.AlignVCenter:
-                dy = (self._size.height() - osd.height()) / 2 + baseline_pos
+                offset_y = (self._size.height() - osd.height()) / 2 + baseline_pos
             elif self._format.alignment & Qt.Alignment.AlignBaseline:
-                dy = self._size.height() / 2
+                offset_y = self._size.height() / 2
             elif self._format.alignment & Qt.Alignment.AlignTop:
-                dy = baseline_pos + self._format.outline.width
+                offset_y = baseline_pos + self._format.outline.width
             elif self._format.alignment & Qt.Alignment.AlignBottom:
-                dy = (self._size.height()
+                offset_y = (self._size.height()
                       - (osd.height() - baseline_pos)
                       - self._format.outline.width)
             else:
-                dy = self._baseline_pos.y()
+                offset_y = self._baseline_pos.y()
 
-            translation = QPointF(dx, dy)
+            translation = QPointF(offset_x, offset_y)
 
         return translation
 
-    def draw(self, qp):
+    def draw(self, qpainter):
+        """ Draw the viewer widget
+
+        :param qpainter: QPainter instance
+        """
         if callable(self._text):
             text = self._text()
         else:
@@ -100,38 +125,41 @@ class OSDWidget(QWidget):
 
         osd.translate(translation)
 
-        qp.setRenderHint(QPainter.RenderHints.Antialiasing)
+        qpainter.setRenderHint(QPainter.RenderHints.Antialiasing)
 
-        qp.setPen(self._format.outline.color)
-        qp.setBrush(self._format.outline.color)
+        qpainter.setPen(self._format.outline.color)
+        qpainter.setBrush(self._format.outline.color)
         stroker = QPainterPathStroker()
         stroker.setWidth(self._format.outline.width)
 
-        qp.drawPath(stroker.createStroke(osd))
+        qpainter.drawPath(stroker.createStroke(osd))
 
-        qp.setPen(self._format.color)
-        qp.setBrush(self._format.color)
-        qp.drawPath(osd)
+        qpainter.setPen(self._format.color)
+        qpainter.setBrush(self._format.color)
+        qpainter.drawPath(osd)
 
-        qp.setBrush(Qt.BrushStyle.NoBrush)
-        qp.setPen(QColor('#ff0000'))
-        qp.drawRect(QRect(0, 0, self.width(), self.height()))
+        qpainter.setBrush(Qt.BrushStyle.NoBrush)
+        qpainter.setPen(QColor('#ff0000'))
+        qpainter.drawRect(QRect(0, 0, self.width(), self.height()))
 
-        qp.setPen(QColor('#00ff00'))
-        qp.drawLine(QPointF(0, translation.y()),
+        qpainter.setPen(QColor('#00ff00'))
+        qpainter.drawLine(QPointF(0, translation.y()),
                     QPointF(self.width(), translation.y()))
 
         osd_bounds = osd.boundingRect()
-        qp.setPen(QColor('#00ffff'))
-        qp.drawRect(QRectF(translation.x(),
+        qpainter.setPen(QColor('#00ffff'))
+        qpainter.drawRect(QRectF(translation.x(),
                            translation.y() - osd_bounds.height(),
                            osd_bounds.width(),
                            osd_bounds.height()))
 
 
 class TimerWidget(QWidget):
-    def __init__(self, interval, format_func, parent=None):
-        super(TimerWidget, self).__init__(parent=parent)
+    """ Timer widget
+
+    """
+    def __init__(self, interval, parent=None):
+        super().__init__(parent=parent)
 
         self.interval = interval
 
@@ -140,22 +168,40 @@ class TimerWidget(QWidget):
         self.timer.timeout.connect(self.showTime)
 
     def start(self):
+        """ Start the image timer
+
+        """
         self.timer.start(self.interval)
 
     def stop(self):
+        """ Stop the timer
+
+        """
         self.timer.stop()
         self.showTime()
 
+    # pylint: disable=invalid-name
     def showTime(self):
+        """ Show time event handler overload
+
+        """
         self.repaint()
 
 
 class Window(QWidget):
-    def __init__(self, parent=None):
-        super(Window, self).__init__(parent=parent)
-        self.init_UI(parent)
+    """ Main window widget
 
-    def init_UI(self, parent=None):
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.init_ui()
+
+    def init_ui(self):
+        """ Initialize the UI
+
+        :param image_dir: Path of the root image directory to be displayed
+
+        """
         self.delays = choices(range(1, 5), k=1)
         print(self.delays)
         self.step = 0
@@ -163,7 +209,7 @@ class Window(QWidget):
         self.setGeometry(QRect(QPoint(0, 0), self.screen().size()))
 
         self.widgets = {}
-        self.widgets['timer'] = TimerWidget(100, self.format_time, parent=self)
+        self.widgets['timer'] = TimerWidget(100, parent=self)
         self.widgets['timer'].setGeometry(500, 400, 200, 50)
 
         font =QFont()
@@ -199,12 +245,20 @@ class Window(QWidget):
         self.start()
 
     def format_time(self):
+        """ Return the time string from the given time.
+
+        :param ts: Time to be formated
+
+        """
         time = self.timer.remainingTime()
         time = datetime.fromtimestamp(time / 1000, tz=timezone.utc).time()
         text = time.strftime("%H:%M:%S.%f")[:-5]
         return text
 
     def start(self):
+        """ Start the image timer
+
+        """
         if self.step >= len(self.delays):
             sys.exit()
 
@@ -216,30 +270,41 @@ class Window(QWidget):
 
         self.step += 1
 
-    def paintEvent(self, e=None):
-        qp = QPainter()
-        qp.begin(self)
-        self.draw(qp)
-        qp.end()
+    # pylint: disable=invalid-name
+    # pylint: disable=unused-argument
+    def paintEvent(self, event=None):
+        """ Paint event handler overload
 
-    def draw(self, qp):
-        qp.setBrush(Qt.GlobalColor.blue)
-        qp.drawRect(self.geometry())
+        :param event: The event
+
+        """
+        qpainter = QPainter()
+        qpainter.begin(self)
+        self.draw(qpainter)
+        qpainter.end()
+
+    def draw(self, qpainter):
+        """ Display the timer
+
+        :param qpainter: QPainter instance
+        """
+        qpainter.setBrush(Qt.GlobalColor.blue)
+        qpainter.drawRect(self.geometry())
 
 
-def main():
+def __main__():
     app = QApplication([])
-    w = QMainWindow()
-    w.setWindowFlags(Qt.WindowFlags.WindowStaysOnTopHint |
-                     Qt.WindowFlags.CustomizeWindowHint |
-                     Qt.WindowFlags.MaximizeUsingFullscreenGeometryHint |
-                     Qt.WindowFlags.FramelessWindowHint)
-    w.setGeometry(QRect(QPoint(0, 0), w.screen().size()))
-    w.setCentralWidget(Window(parent=w))
-    w.showFullScreen()
-    w.setWindowTitle(os.path.basename(__file__))
+    window = QMainWindow()
+    window.setWindowFlags(Qt.WindowFlags.WindowStaysOnTopHint |
+                          Qt.WindowFlags.CustomizeWindowHint |
+                          Qt.WindowFlags.MaximizeUsingFullscreenGeometryHint |
+                          Qt.WindowFlags.FramelessWindowHint)
+    window.setGeometry(QRect(QPoint(0, 0), window.screen().size()))
+    window.setCentralWidget(Window(parent=window))
+    window.showFullScreen()
+    window.setWindowTitle(os.path.basename(__file__))
     app.exec()
 
 
 if __name__ == '__main__':
-    main()
+    __main__()
