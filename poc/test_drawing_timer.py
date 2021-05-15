@@ -153,21 +153,6 @@ class OSDWidget(QWidget):
         qp.setBrush(self._format.color)
         qp.drawPath(osd)
 
-        #qp.setBrush(Qt.BrushStyle.NoBrush)
-        #qp.setPen(QColor('#ff0000'))
-        #qp.drawRect(QRect(0, 0, self.width(), self.height()))
-
-        #qp.setPen(QColor('#00ff00'))
-        #qp.drawLine(QPointF(0, translation.y()),
-        #            QPointF(self.width(), translation.y()))
-
-        #osd_bounds = osd.boundingRect()
-        #qp.setPen(QColor('#00ffff'))
-        #qp.drawRect(QRectF(translation.x(),
-        #                   translation.y() - osd_bounds.height(),
-        #                   osd_bounds.width(),
-        #                   osd_bounds.height()))
-
     def setWindowTitle(self, title):
         widget = self.parentWidget()
         if not widget:
@@ -309,10 +294,6 @@ class Window(QWidget):
 
         self.timer.start(self.delays[self.step])
         self.widgets['timer'].start()
-        #if self.step % 2 == 0:
-        #    self.widgets['timer'].start()
-        #else:
-        #    self.widgets['timer'].stop()
 
         title = f"{self.step+1:{len(str(self.COUNT))}d}/{len(self.delays)}"
         title += f" - {os.path.basename(self.images[self.step])}"
