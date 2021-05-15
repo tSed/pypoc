@@ -233,7 +233,7 @@ class Window(QWidget):
         self.image = None
         self.image_path = None
 
-        self.delays = [self.DELAY for _ in self.images]
+        self.delays = [self.DELAY * 1000 for _ in self.images]
         self.step = 0
 
     def get_image(self, size):
@@ -307,7 +307,7 @@ class Window(QWidget):
             QApplication.instance().quit()
             return
 
-        self.timer.start(self.delays[self.step] * 1000)
+        self.timer.start(self.delays[self.step])
         self.widgets['timer'].start()
         #if self.step % 2 == 0:
         #    self.widgets['timer'].start()
