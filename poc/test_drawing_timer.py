@@ -280,6 +280,11 @@ class Window(QWidget):
         layout.addWidget(self.widgets['timer'])
         self.setLayout(layout)
 
+        for widget in self.widgets.values():
+            widget.setFocusProxy(self)
+
+        self.setFocus()
+
         self.start()
 
     def format_time(self):
