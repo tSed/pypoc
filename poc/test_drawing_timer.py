@@ -240,9 +240,10 @@ class Window(QWidget):
         timer_widget = TimerWidget(100, self.format_time, parent=self)
         timer_widget.setGeometry(500, 400, 200, 50)
 
-        font = QFont()
+        font = QFont('Lucida Console')
         font.setPixelSize(30)
         #font.setPointSize(24)
+        font.setStyleHint(font.StyleHint.Monospace)
         osd_widget = OSDWidget(self.format_time,
                                OSDFormat(font,
                                          Qt.GlobalColor.yellow,
