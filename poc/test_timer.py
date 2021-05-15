@@ -1,3 +1,7 @@
+""" PyQt6 sample program: Timer.
+
+"""
+
 import sys
 import os
 
@@ -10,8 +14,11 @@ from PyQt6.QtCore import Qt, QRect, QTimer, QPoint
 
 
 class TimerWidget(QWidget):
+    """ Timer widget
+
+    """
     def __init__(self, interval, format_func, parent=None):
-        super(TimerWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         size = parent.size() if parent else self.size()
         self.setGeometry(0, 0, size.width(), size.height())
@@ -31,21 +38,43 @@ class TimerWidget(QWidget):
         self.timer.timeout.connect(self.showTime)
 
     def start(self, master):
+        """ Start the timer
+
+        :param master: The master timer, which remaining time will be displayed
+
+        """
         self.master = master
         self.timer.start(self.interval)
 
     def stop(self):
+        """ Stop the timer
+
+        """
         self.master = None
         self.timer.stop()
         self.showTime()
 
+    # pylint: disable=invalid-name
     def showTime(self):
+        """ Show time event handler overload
+
+        """
         self.draw()
 
-    def paintEvent(self, e=None):
+    # pylint: disable=invalid-name
+    # pylint: disable=unused-argument
+    def paintEvent(self, event=None):
+        """ Paint event handler overload
+
+        :param event: The event
+
+        """
         self.draw()
 
     def draw(self):
+        """ Display the timer
+
+        """
         if self.master:
             ts = self.master.remainingTime()
             text = self.format(ts)
@@ -55,16 +84,30 @@ class TimerWidget(QWidget):
 
 
 class Window(QWidget):
+    """ Main window widget
+
+    """
     def __init__(self, parent=None):
-        super(Window, self).__init__(parent=parent)
-        self.init_UI(parent)
+        super().__init__(parent=parent)
+        self.init_ui()
 
     @staticmethod
-    def format_time(ts):
-        text = datetime.fromtimestamp(ts/1000, tz=timezone.utc).time().strftime("%H:%M:%S.%f")[:-5]
+    def format_time(timestamp):
+        """ Return the time string from the given time.
+
+        :param ts: Time to be formated
+
+        """
+        date = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc)
+        text = date.time().strftime("%H:%M:%S.%f")[:-5]
         return text
 
-    def init_UI(self, parent=None):
+    def init_ui(self):
+        """ Initialize the UI
+
+        :param image_dir: Path of the root image directory to be displayed
+
+        """
         self.delays = choices(range(5, 30), k=5)
         print(self.delays)
         self.step = 0
@@ -84,6 +127,9 @@ class Window(QWidget):
         self.start()
 
     def start(self):
+        """ Start the image timer
+
+        """
         if self.step >= len(self.delays):
             sys.exit()
 
@@ -96,19 +142,19 @@ class Window(QWidget):
         self.step += 1
 
 
-def main():
+def __main__():
     app = QApplication([])
-    w = QMainWindow()
-    w.setWindowFlags(Qt.WindowFlags.WindowStaysOnTopHint |
-                     Qt.WindowFlags.CustomizeWindowHint |
-                     Qt.WindowFlags.MaximizeUsingFullscreenGeometryHint |
-                     Qt.WindowFlags.FramelessWindowHint)
-    w.setGeometry(QRect(QPoint(0, 0), w.screen().size()))
-    w.setCentralWidget(Window(parent=w))
-    w.showFullScreen()
-    w.setWindowTitle(os.path.basename(__file__))
+    window = QMainWindow()
+    window.setWindowFlags(Qt.WindowFlags.WindowStaysOnTopHint |
+                          Qt.WindowFlags.CustomizeWindowHint |
+                          Qt.WindowFlags.MaximizeUsingFullscreenGeometryHint |
+                          Qt.WindowFlags.FramelessWindowHint)
+    window.setGeometry(QRect(QPoint(0, 0), window.screen().size()))
+    window.setCentralWidget(Window(parent=window))
+    window.showFullScreen()
+    window.setWindowTitle(os.path.basename(__file__))
     app.exec()
 
 
 if __name__ == '__main__':
-    main()
+    __main__()
