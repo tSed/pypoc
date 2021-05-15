@@ -283,9 +283,12 @@ class Window(QWidget):
         self.start()
 
     def format_time(self):
-        time = self.timer.remainingTime()
-        time = datetime.fromtimestamp(time / 1000, tz=timezone.utc).time()
-        text = time.strftime("%H:%M:%S.%f")[:-5]
+        if self.timer.isActive():
+            time = self.timer.remainingTime()
+            time = datetime.fromtimestamp(time / 1000, tz=timezone.utc).time()
+            text = time.strftime("%H:%M:%S.%f")[:-5]
+        else:
+            text = '--:--:--.-'
         return text
 
     def start(self):
@@ -302,6 +305,13 @@ class Window(QWidget):
         self.setWindowTitle(title)
 
         self.step += 1
+
+    def pause_resume(self):
+        if self.timer.isActive():
+            self.delays[self.step - 1] = self.timer.remainingTime()
+            self.timer.stop()
+        else:
+            self.timer.start(self.delays[self.step - 1])
 
     def paintEvent(self, e=None):
         qp = QPainter()
