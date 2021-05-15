@@ -336,6 +336,17 @@ class Window(QWidget):
 
         widget.setWindowTitle(title)
 
+    def keyPressEvent(self, event):
+        key = Qt.Key(event.key())
+        if key == Qt.Key.Key_Q:
+            QApplication.instance().quit()
+        elif key in (Qt.Key.Key_N, Qt.Key.Key_Enter, Qt.Key.Key_Return):
+            self.start()
+        elif key == Qt.Key.Key_Space:
+            self.pause_resume()
+        else:
+            event.ignore()
+
 
 class ScreenSaver:
     def __init__(self, enable=False, timeout=600):
