@@ -140,10 +140,10 @@ class Window(QWidget):
 def __main__():
     app = QApplication([])
     window = QMainWindow()
-    window.setWindowFlags(Qt.WindowFlags.WindowStaysOnTopHint |
-                          Qt.WindowFlags.CustomizeWindowHint |
-                          Qt.WindowFlags.MaximizeUsingFullscreenGeometryHint |
-                          Qt.WindowFlags.FramelessWindowHint)
+    window.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint |
+                          Qt.WindowType.CustomizeWindowHint |
+                          Qt.WindowType.MaximizeUsingFullscreenGeometryHint |
+                          Qt.WindowType.FramelessWindowHint)
     geometry = QRect(QPoint(0, 0), window.screen().size())
     window.setGeometry(geometry)
     window.setCentralWidget(Window(sys.argv[1], geometry=geometry, parent=window))

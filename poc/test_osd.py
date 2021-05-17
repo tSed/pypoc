@@ -61,18 +61,18 @@ class OSDWidget(QWidget):
 
         :return: The translation vector as a QPointF
         """
-        if self._format.alignment == Qt.Alignment.AlignAbsolute:
+        if self._format.alignment == Qt.AlignmentFlag.AlignAbsolute:
             translation = self._baseline_pos
         else:
-            # No need for handling Qt.Alignment.AlignCenter since it is the combination
-            # of Qt.Alignment.AlignVCenter | Qt.Alignment.AlignHCenter
+            # No need for handling Qt.AlignmentFlag.AlignCenter since it is the combination
+            # of Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter
 
             # Horizontal alignment
-            if self._format.alignment & Qt.Alignment.AlignHCenter:
+            if self._format.alignment & Qt.AlignmentFlag.AlignHCenter:
                 offset_x = (self._size.width() - osd.width()) / 2
-            elif self._format.alignment & Qt.Alignment.AlignLeft:
+            elif self._format.alignment & Qt.AlignmentFlag.AlignLeft:
                 offset_x = self._format.outline.width
-            elif self._format.alignment & Qt.Alignment.AlignRight:
+            elif self._format.alignment & Qt.AlignmentFlag.AlignRight:
                 offset_x = self._size.width() - osd.width() - self._format.outline.width
             else:
                 offset_x = self._format.outline.width
@@ -84,13 +84,13 @@ class OSDWidget(QWidget):
                 baseline_pos = self._baseline_pos.y()
 
             # OSD text alignment in this widget
-            if self._format.alignment & Qt.Alignment.AlignVCenter:
+            if self._format.alignment & Qt.AlignmentFlag.AlignVCenter:
                 offset_y = (self._size.height() - osd.height()) / 2 + baseline_pos
-            elif self._format.alignment & Qt.Alignment.AlignBaseline:
+            elif self._format.alignment & Qt.AlignmentFlag.AlignBaseline:
                 offset_y = self._size.height() / 2
-            elif self._format.alignment & Qt.Alignment.AlignTop:
+            elif self._format.alignment & Qt.AlignmentFlag.AlignTop:
                 offset_y = baseline_pos + self._format.outline.width
-            elif self._format.alignment & Qt.Alignment.AlignBottom:
+            elif self._format.alignment & Qt.AlignmentFlag.AlignBottom:
                 offset_y = (self._size.height()
                       - (osd.height() - baseline_pos)
                       - self._format.outline.width)
@@ -125,7 +125,7 @@ class OSDWidget(QWidget):
 
         osd.translate(translation)
 
-        qpainter.setRenderHint(QPainter.RenderHints.Antialiasing)
+        qpainter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         qpainter.setPen(self._format.outline.color)
         qpainter.setBrush(self._format.outline.color)
@@ -220,15 +220,15 @@ class Window(QWidget):
                                                   Qt.GlobalColor.yellow,
                                                   OutlineFormat(QColor("#202020"), 5),
                                                   0
-                                                  #| Qt.Alignment.AlignAbsolute
-                                                  #| Qt.Alignment.AlignCenter
-                                                  #| Qt.Alignment.AlignHCenter
-                                                  #| Qt.Alignment.AlignLeft
-                                                  | Qt.Alignment.AlignRight
-                                                  #| Qt.Alignment.AlignVCenter
-                                                  #| Qt.Alignment.AlignBaseline
-                                                  #| Qt.Alignment.AlignTop
-                                                  | Qt.Alignment.AlignBottom
+                                                  #| Qt.AlignmentFlag.AlignAbsolute
+                                                  #| Qt.AlignmentFlag.AlignCenter
+                                                  #| Qt.AlignmentFlag.AlignHCenter
+                                                  #| Qt.AlignmentFlag.AlignLeft
+                                                  | Qt.AlignmentFlag.AlignRight
+                                                  #| Qt.AlignmentFlag.AlignVCenter
+                                                  #| Qt.AlignmentFlag.AlignBaseline
+                                                  #| Qt.AlignmentFlag.AlignTop
+                                                  | Qt.AlignmentFlag.AlignBottom
                                                  ),
                                         QPoint(self.width() - 220, 20),
                                         QSize(200, 80),
@@ -295,10 +295,10 @@ class Window(QWidget):
 def __main__():
     app = QApplication([])
     window = QMainWindow()
-    window.setWindowFlags(Qt.WindowFlags.WindowStaysOnTopHint |
-                          Qt.WindowFlags.CustomizeWindowHint |
-                          Qt.WindowFlags.MaximizeUsingFullscreenGeometryHint |
-                          Qt.WindowFlags.FramelessWindowHint)
+    window.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint |
+                          Qt.WindowType.CustomizeWindowHint |
+                          Qt.WindowType.MaximizeUsingFullscreenGeometryHint |
+                          Qt.WindowType.FramelessWindowHint)
     window.setGeometry(QRect(QPoint(0, 0), window.screen().size()))
     window.setCentralWidget(Window(parent=window))
     window.showFullScreen()

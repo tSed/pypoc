@@ -25,7 +25,7 @@ class TimerWidget(QWidget):
 
         self.label = QLabel("", parent=self)
         self.label.setFont(QFont('Times', 15))
-        self.label.setAlignment(Qt.Alignment.AlignCenter)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setGeometry(0, 0, self.size().width(), self.size().height())
 
         self.format = format_func
@@ -145,10 +145,10 @@ class Window(QWidget):
 def __main__():
     app = QApplication([])
     window = QMainWindow()
-    window.setWindowFlags(Qt.WindowFlags.WindowStaysOnTopHint |
-                          Qt.WindowFlags.CustomizeWindowHint |
-                          Qt.WindowFlags.MaximizeUsingFullscreenGeometryHint |
-                          Qt.WindowFlags.FramelessWindowHint)
+    window.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint |
+                          Qt.WindowType.CustomizeWindowHint |
+                          Qt.WindowType.MaximizeUsingFullscreenGeometryHint |
+                          Qt.WindowType.FramelessWindowHint)
     window.setGeometry(QRect(QPoint(0, 0), window.screen().size()))
     window.setCentralWidget(Window(parent=window))
     window.showFullScreen()
