@@ -1,2 +1,2 @@
-# py
-Misc. python apps
+# py poc/sandbox
+Misc. python apps test bed
